@@ -73,7 +73,7 @@ export default function SignupPage() {
              'Check your email'}
           </h1>
           {step === 'sent' && (
-            <p className="text-gray-500 mt-2">We sent a magic link to {email}</p>
+            <p className="text-gray-500 mt-2">We sent a magic link to {email} — check spam if you don&apos;t see it</p>
           )}
         </div>
 
@@ -175,13 +175,17 @@ export default function SignupPage() {
               <p className="text-center text-sm text-gray-600 leading-relaxed">
                 Click the link in your email to complete signup. It expires in 15 minutes.
               </p>
-              <p className="text-center text-xs text-gray-400">
-                No email? Check your spam folder or{' '}
+              <div className="w-full bg-orange-50 border border-orange-200 rounded-xl p-4 text-center">
+                <p className="text-orange-700 font-bold text-sm">📧 Check your spam folder!</p>
+                <p className="text-orange-600 text-xs mt-1">Our emails sometimes land in spam. Move it to inbox and click the link.</p>
+              </div>
+              <p className="text-center text-sm font-bold text-orange-500">
+                Didn&apos;t get it?{' '}
                 <button
                   onClick={() => { setStep('email'); setError(''); }}
-                  className="text-orange-500 font-semibold hover:underline"
+                  className="underline hover:text-orange-600"
                 >
-                  try again
+                  Try again
                 </button>.
               </p>
             </div>
