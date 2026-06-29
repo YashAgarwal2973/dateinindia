@@ -1,7 +1,9 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { Shield, CheckCircle, Eye, AlertTriangle, TrendingUp, Users } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import Link from 'next/link';
-import { Heart } from 'lucide-react';
+import AuthGuard from '@/components/shared/AuthGuard';
+import { useAuth } from '@/lib/auth-context';
 
 interface Report {
   id: string;
@@ -18,43 +20,29 @@ interface Report {
   created_at: string;
 }
 
-async function getReports(): Promise<Report[]> {
-  const { data } = await supabase
-    .from('transparency_reports')
-    .select('*')
-    .not('published_at', 'is', null)
-    .order('report_month', { ascending: false });
-  return (data as Report[]) || [];
-}
+export default function TrustPage() {
+  const { db } = useAuth();
+  const [reports, setReports] = useState<Report[]>([]);
 
-export default async function TrustPage() {
-  const reports = await getReports();
+  useEffect(() => {
+    document.title = 'Trust & Transparency | DateInIndia';
+    db.from('transparency_reports')
+      .select('*')
+      .not('published_at', 'is', null)
+      .order('report_month', { ascending: false })
+      .then(({ data }: { data: Report[] | null }) => setReports(data || []));
+  }, [db]);
+
   const latest = reports[0];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navbar (public) */}
-      <nav className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
-              <Heart className="w-4 h-4 text-white fill-white" />
-            </div>
-            <span className="font-display font-bold text-xl text-gray-900">DateInIndia</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="text-sm font-medium text-gray-700 hover:text-orange-500">Log In</Link>
-            <Link href="/signup" className="px-4 py-2 bg-orange-500 text-white text-sm font-semibold rounded-xl hover:bg-orange-600">Join Free</Link>
-          </div>
-        </div>
-      </nav>
-
+    <AuthGuard>
       <div className="max-w-5xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-4 py-1.5 mb-6">
             <Eye className="w-4 h-4 text-green-600" />
-            <span className="text-sm font-medium text-green-700">Public Transparency Report — No Login Required</span>
+            <span className="text-sm font-medium text-green-700">Public Transparency Report</span>
           </div>
           <h1 className="text-4xl font-display font-bold text-gray-900 mb-4">
             Nothing to hide. Everything published.
@@ -79,9 +67,7 @@ export default async function TrustPage() {
                 <Shield className="w-5 h-5 text-green-600" />
                 <div>
                   <p className="text-xs text-green-600 font-medium">Fake Profiles</p>
-                  <p className="text-2xl font-display font-bold text-green-700">
-                    {latest.fake_profiles_removed}
-                  </p>
+                  <p className="text-2xl font-display font-bold text-green-700">{latest.fake_profiles_removed}</p>
                 </div>
               </div>
             </div>
@@ -174,7 +160,7 @@ export default async function TrustPage() {
           </div>
         )}
 
-        {/* Our methodology */}
+        {/* Methodology */}
         <div className="mt-10 bg-gray-900 rounded-3xl p-8 text-white">
           <div className="flex items-center gap-2 mb-5">
             <Users className="w-5 h-5 text-orange-400" />
@@ -185,13 +171,7 @@ export default async function TrustPage() {
             <p>We define &ldquo;fake profile&rdquo; as any account suspended after a human moderation review confirmed identity fraud. &ldquo;Scam account&rdquo; means accounts where our AI or a user report identified a financial fraud attempt.</p>
           </div>
         </div>
-
-        <div className="text-center mt-10">
-          <Link href="/signup" className="inline-flex items-center gap-2 px-8 py-4 bg-orange-500 text-white font-bold text-lg rounded-2xl hover:bg-orange-600 transition-all">
-            Join DateInIndia — It&apos;s Free
-          </Link>
-        </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 }

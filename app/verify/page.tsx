@@ -27,7 +27,7 @@ function VerifyContent() {
       .then(({ accessToken, isNewUser }) => {
         sessionStorage.removeItem('signup_name');
         signIn(accessToken);
-        router.replace(isNewUser ? '/onboarding' : '/browse');
+        router.replace(isNewUser ? '/set-password?next=/onboarding' : '/browse');
       })
       .catch(() => {
         setError('This link has expired or already been used. Request a new one.');

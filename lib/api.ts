@@ -1,4 +1,4 @@
-import { functionsUrl } from './supabase';
+import { functionsUrl, supabase } from './supabase';
 
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
@@ -18,6 +18,37 @@ export async function sendMagicLink(email: string, name?: string): Promise<void>
   const res = await edgeFetch('send-magic-link', { email, ...(name ? { name } : {}) });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Failed to send magic link');
+}
+
+/** Sign in with email + password via Supabase auth. */
+export async function signInWithPassword(
+  email: string,
+  password: string
+): Promise<{ accessToken: string; userId: string }> {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw new Error(error.message);
+  if (!data.session) throw new Error('No session returned');
+  return {
+    accessToken: data.session.access_token,
+    userId: data.user.id,
+  };
+}
+
+/** Update the authenticated user's password via Supabase Auth REST API. */
+export async function setPassword(jwt: string, password: string): Promise<void> {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+  const res = await fetch(`${supabaseUrl}/auth/v1/user`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+      'apikey': supabaseAnonKey,
+    },
+    body: JSON.stringify({ password }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.msg || data.message || 'Failed to set password');
 }
 
 /** Verify a magic link token and return a signed JWT + user info. */

@@ -12,7 +12,10 @@ export default function AppFooter() {
           <span className="font-semibold text-gray-500">DateInIndia</span>
           <span className="hidden sm:inline">— Real people. Free messaging. Government verified.</span>
         </div>
-        <nav className="flex items-center gap-4">
+        <nav className="flex flex-wrap items-center justify-center gap-4">
+          <Link href="/safety" className="hover:text-gray-600 transition-colors">Safety</Link>
+          <Link href="/trust" className="hover:text-gray-600 transition-colors">Trust &amp; Transparency</Link>
+          <Link href="/premium" className="hover:text-gray-600 transition-colors">Pricing</Link>
           <Link href="/privacy" className="hover:text-gray-600 transition-colors">Privacy Policy</Link>
           <Link href="/terms" className="hover:text-gray-600 transition-colors">Terms of Service</Link>
           <a href="mailto:support@dateinindia.com" className="hover:text-gray-600 transition-colors">Support</a>
