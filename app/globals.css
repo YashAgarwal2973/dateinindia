@@ -1,0 +1,161 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: 220 14% 98%;
+    --foreground: 220 13% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 13% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 13% 9%;
+    --primary: 24 95% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 142 70% 35%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 43 96% 56%;
+    --accent-foreground: 220 13% 9%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 24 95% 53%;
+    --radius: 0.75rem;
+
+    /* DateInIndia brand colors */
+    --saffron: #F97316;
+    --saffron-light: #FED7AA;
+    --saffron-dark: #C2410C;
+    --trust-green: #16A34A;
+    --trust-green-light: #BBF7D0;
+    --trust-gold: #D97706;
+    --trust-gold-light: #FDE68A;
+    --danger: #DC2626;
+    --online: #22C55E;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-[#F9FAFB] text-[#111827];
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', Georgia, serif;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+
+  .text-saffron { color: #F97316; }
+  .bg-saffron { background-color: #F97316; }
+  .border-saffron { border-color: #F97316; }
+  .text-trust-green { color: #16A34A; }
+  .bg-trust-green { background-color: #16A34A; }
+  .text-trust-gold { color: #D97706; }
+  .bg-trust-gold { background-color: #D97706; }
+
+  .trust-badge-phone {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700;
+  }
+
+  .trust-badge-photo {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700;
+  }
+
+  .trust-badge-id {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700;
+  }
+
+  .trust-badge-human {
+    @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: white;
+  }
+
+  .member-card {
+    @apply bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer;
+    border: 1px solid #F3F4F6;
+  }
+
+  .member-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .score-bar-red { @apply bg-red-500; }
+  .score-bar-yellow { @apply bg-yellow-500; }
+  .score-bar-green { @apply bg-green-500; }
+
+  .online-dot {
+    @apply w-2.5 h-2.5 rounded-full bg-green-500 inline-block;
+    box-shadow: 0 0 0 2px white, 0 0 0 3px #22C55E;
+    animation: pulse-green 2s infinite;
+  }
+}
+
+@keyframes pulse-green {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes banner-slide {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.trust-banner-track {
+  animation: banner-slide 30s linear infinite;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+/* Chat bubble styles */
+.chat-bubble-sent {
+  @apply bg-orange-500 text-white rounded-2xl rounded-tr-sm px-4 py-2 max-w-xs ml-auto;
+}
+
+.chat-bubble-received {
+  @apply bg-white text-gray-900 rounded-2xl rounded-tl-sm px-4 py-2 max-w-xs border border-gray-100 shadow-sm;
+}
+
+/* Premium gradient */
+.premium-gradient {
+  background: linear-gradient(135deg, #F97316 0%, #D97706 100%);
+}
+
+/* Trust score bar */
+.trust-score-fill {
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
