@@ -175,7 +175,7 @@ export default function PremiumPage() {
             alert('Payment verification failed. Contact support with payment ID: ' + response.razorpay_payment_id);
           }
         },
-        prefill: { contact: user.phone || '' },
+        prefill: { contact: user.phone || user.email || '' },
         theme: { color: '#f97316' },
         modal: { ondismiss: () => setLoading(null) },
       });

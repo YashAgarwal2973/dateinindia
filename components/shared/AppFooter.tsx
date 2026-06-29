@@ -13,6 +13,7 @@ export default function AppFooter() {
           <span className="hidden sm:inline">— Real people. Free messaging. Government verified.</span>
         </div>
         <nav className="flex flex-wrap items-center justify-center gap-4">
+          <Link href="/" className="hover:text-gray-600 transition-colors">About Us</Link>
           <Link href="/safety" className="hover:text-gray-600 transition-colors">Safety</Link>
           <Link href="/trust" className="hover:text-gray-600 transition-colors">Trust &amp; Transparency</Link>
           <Link href="/premium" className="hover:text-gray-600 transition-colors">Pricing</Link>

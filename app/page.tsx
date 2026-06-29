@@ -7,10 +7,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 const STATS = [
-  { label: 'Verified Members', value: '3,241+' },
+  { label: 'Aadhaar Verified', value: '100%' },
   { label: 'Fake Profiles', value: '0' },
-  { label: 'Matches Made', value: '847+' },
-  { label: 'Success Stories', value: '23' },
+  { label: 'Free to Message', value: 'Always' },
+  { label: 'Trust Score', value: 'Public' },
 ];
 
 const FEATURES = [
@@ -64,31 +64,28 @@ const TESTIMONIALS = [
     city: 'Bangalore',
     text: 'I tried every app. The Aadhaar verification on DateInIndia is the only thing that made me feel actually safe.',
     rating: 5,
-    photo: 'https://images.pexels.com/photos/3064079/pexels-photo-3064079.jpeg?auto=compress&cs=tinysrgb&w=150',
   },
   {
     name: 'Rahul G.',
     city: 'Delhi',
     text: 'Found my match in 3 weeks. What I love most? I could message her for free. No paywall nonsense.',
     rating: 5,
-    photo: 'https://images.pexels.com/photos/1139743/pexels-photo-1139743.jpeg?auto=compress&cs=tinysrgb&w=150',
   },
   {
     name: 'Meera P.',
     city: 'Mumbai',
     text: "The transparency report is what sold me. A dating site that shows you exactly what they're doing. Unheard of.",
     rating: 5,
-    photo: 'https://images.pexels.com/photos/3756981/pexels-photo-3756981.jpeg?auto=compress&cs=tinysrgb&w=150',
   },
 ];
 
 const HERO_PROFILES = [
-  { url: 'https://images.pexels.com/photos/3756981/pexels-photo-3756981.jpeg', name: 'Priya', city: 'Mumbai', score: 85, verified: true, online: true },
-  { url: 'https://images.pexels.com/photos/1139743/pexels-photo-1139743.jpeg', name: 'Rahul', city: 'Delhi', score: 72, verified: true, online: false },
-  { url: 'https://images.pexels.com/photos/3064079/pexels-photo-3064079.jpeg', name: 'Anjali', city: 'Bangalore', score: 90, verified: true, online: true },
-  { url: 'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg', name: 'Vikram', city: 'Hyderabad', score: 68, verified: false, online: true },
-  { url: 'https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg', name: 'Sneha', city: 'Chennai', score: 95, verified: true, online: true },
-  { url: 'https://images.pexels.com/photos/1212984/pexels-photo-1212984.jpeg', name: 'Arjun', city: 'Pune', score: 78, verified: true, online: false },
+  { bg: 'bg-orange-200', name: 'Priya', city: 'Mumbai', score: 85, verified: true, online: true },
+  { bg: 'bg-blue-200', name: 'Rahul', city: 'Delhi', score: 72, verified: true, online: false },
+  { bg: 'bg-green-200', name: 'Anjali', city: 'Bangalore', score: 90, verified: true, online: true },
+  { bg: 'bg-purple-200', name: 'Vikram', city: 'Hyderabad', score: 68, verified: false, online: true },
+  { bg: 'bg-pink-200', name: 'Sneha', city: 'Chennai', score: 95, verified: true, online: true },
+  { bg: 'bg-yellow-200', name: 'Arjun', city: 'Pune', score: 78, verified: true, online: false },
 ];
 
 export default function LandingPage() {
@@ -200,11 +197,9 @@ export default function LandingPage() {
               <div className="grid grid-cols-3 gap-3 max-w-lg mx-auto">
                 {HERO_PROFILES.map((p, i) => (
                   <div key={i} className="relative rounded-2xl overflow-hidden aspect-[3/4] shadow-lg group cursor-pointer">
-                    <img
-                      src={`${p.url}?auto=compress&cs=tinysrgb&w=300`}
-                      alt={p.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+                    <div className={`w-full h-full ${p.bg} flex items-center justify-center`}>
+                      <span className="text-4xl font-bold text-white/60">{p.name[0]}</span>
+                    </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                     {p.online && (
                       <div className="absolute top-2 left-2">
@@ -300,7 +295,7 @@ export default function LandingPage() {
           </div>
           <div className="grid sm:grid-cols-4 gap-8">
             {[
-              { step: '1', title: 'Sign up with phone', desc: 'OTP verification in 30 seconds.' },
+              { step: '1', title: 'Sign up with email', desc: 'Get a magic link in seconds — no password needed.' },
               { step: '2', title: 'Build your profile', desc: 'Add photos, your story, your vibe.' },
               { step: '3', title: 'Get Aadhaar verified', desc: 'Free via DigiLocker. Takes 2 minutes.' },
               { step: '4', title: 'Browse and message free', desc: 'No subscription. No paywall. Just connect.' },
@@ -333,7 +328,9 @@ export default function LandingPage() {
                 </div>
                 <p className="text-gray-700 mb-6 leading-relaxed">&ldquo;{t.text}&rdquo;</p>
                 <div className="flex items-center gap-3">
-                  <img src={t.photo} alt={t.name} className="w-10 h-10 rounded-full object-cover" />
+                  <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-orange-600 font-bold text-sm">{t.name[0]}</span>
+                  </div>
                   <div>
                     <div className="font-semibold text-gray-900 text-sm">{t.name}</div>
                     <div className="text-gray-500 text-xs">{t.city}</div>

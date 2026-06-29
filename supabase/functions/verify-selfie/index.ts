@@ -29,6 +29,10 @@ Deno.serve(async (req: Request) => {
       return respond({ error: "user_id and image_base64 are required" }, 400);
     }
 
+    if (image_base64.length > 2_000_000) {
+      return respond({ error: "Image too large. Please use a smaller photo (under 1.5 MB)." }, 400);
+    }
+
     const appId  = Deno.env.get("HYPERVERGE_APP_ID");
     const appKey = Deno.env.get("HYPERVERGE_APP_KEY");
 

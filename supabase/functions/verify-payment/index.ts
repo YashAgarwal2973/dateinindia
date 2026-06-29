@@ -84,6 +84,20 @@ Deno.serve(async (req: Request) => {
       : 30 * 24 * 60 * 60 * 1000;
     const expiresAt = new Date(Date.now() + durationMs).toISOString();
 
+    // Idempotency: reject duplicate payment_id
+    const { data: existing } = await supabase
+      .from("subscriptions")
+      .select("id")
+      .eq("razorpay_payment_id", payment_id)
+      .maybeSingle();
+
+    if (existing) {
+      return new Response(JSON.stringify({ success: true, duplicate: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Mark user premium
     const { error: userErr } = await supabase
       .from("users")

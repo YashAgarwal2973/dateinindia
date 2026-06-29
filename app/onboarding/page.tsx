@@ -62,7 +62,7 @@ export default function OnboardingPage() {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState<FormData>({
     name: user?.name || '',
-    dateOfBirth: user?.date_of_birth || '1995-01-01',
+    dateOfBirth: user?.date_of_birth || '',
     gender: user?.gender || '',
     lookingFor: user?.looking_for || '',
     city: user?.city || '',

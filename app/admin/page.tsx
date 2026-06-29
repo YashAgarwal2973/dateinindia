@@ -149,7 +149,7 @@ function AdminDashboard() {
       .from('users')
       .select('id, name, phone, city, state, age: date_of_birth, is_premium, is_suspended, is_admin, trust_score, strike_count, created_at, last_active_at, photos(storage_url, is_primary)')
       .order('created_at', { ascending: false })
-      .limit(100);
+      .limit(500);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data } = await query as any;
     setUsers(data ?? []);
