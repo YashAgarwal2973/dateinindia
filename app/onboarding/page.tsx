@@ -32,23 +32,6 @@ const INTERESTS = [
   'Food', 'Fashion', 'Technology', 'Gardening', 'Cycling', 'Swimming', 'Writing', 'Spirituality',
 ];
 
-const PEXELS_PHOTOS_W = [
-  'https://images.pexels.com/photos/3756981/pexels-photo-3756981.jpeg',
-  'https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg',
-  'https://images.pexels.com/photos/3064079/pexels-photo-3064079.jpeg',
-  'https://images.pexels.com/photos/1858175/pexels-photo-1858175.jpeg',
-  'https://images.pexels.com/photos/2169434/pexels-photo-2169434.jpeg',
-  'https://images.pexels.com/photos/1520760/pexels-photo-1520760.jpeg',
-];
-
-const PEXELS_PHOTOS_M = [
-  'https://images.pexels.com/photos/1139743/pexels-photo-1139743.jpeg',
-  'https://images.pexels.com/photos/1212984/pexels-photo-1212984.jpeg',
-  'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg',
-  'https://images.pexels.com/photos/1516680/pexels-photo-1516680.jpeg',
-  'https://images.pexels.com/photos/2269872/pexels-photo-2269872.jpeg',
-  'https://images.pexels.com/photos/1300402/pexels-photo-1300402.jpeg',
-];
 
 interface FormData {
   name: string;
@@ -180,15 +163,13 @@ export default function OnboardingPage() {
     }
   }
 
-  const photoOptions = form.gender === 'woman' ? PEXELS_PHOTOS_W : PEXELS_PHOTOS_M;
-
   const canProceed = (() => {
     if (step === 1) return form.name && form.dateOfBirth && form.gender && form.lookingFor;
     if (step === 2) return form.city && form.state;
     if (step === 3) return true;
     if (step === 4) return form.relationshipGoal;
     if (step === 5) return form.bio.length >= 20 && form.interests.length >= 3;
-    if (step === 6) return true;
+    if (step === 6) return !!form.selectedPhoto;
     return true;
   })();
 
@@ -549,58 +530,29 @@ export default function OnboardingPage() {
               <div className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-display font-bold text-gray-900 mb-1">Add your profile photo</h2>
-                  <p className="text-gray-500">Profiles with photos get 10x more views.</p>
+                  <p className="text-gray-500">Profiles with photos get 10x more views. A real photo is required to continue.</p>
                 </div>
 
-                {/* Upload your own */}
-                <div>
-                  <p className="text-sm font-medium text-gray-700 mb-3">Upload your own photo</p>
-                  <PhotoUpload
-                    onUploadComplete={(url) => {
-                      set('selectedPhoto', url);
-                    }}
-                  />
-                  {form.selectedPhoto && form.selectedPhoto.startsWith('https://') && !form.selectedPhoto.includes('pexels') && (
-                    <div className="mt-3 flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl">
-                      <img src={form.selectedPhoto} alt="" className="w-12 h-12 rounded-lg object-cover" />
-                      <div>
-                        <p className="text-sm font-semibold text-green-700">Photo uploaded!</p>
-                        <p className="text-xs text-green-600">This will be your profile photo.</p>
-                      </div>
-                      <div className="ml-auto w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                        <Check className="w-3.5 h-3.5 text-white" />
-                      </div>
+                <PhotoUpload
+                  onUploadComplete={(url) => set('selectedPhoto', url)}
+                />
+
+                {form.selectedPhoto && (
+                  <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl">
+                    <img src={form.selectedPhoto} alt="" className="w-12 h-12 rounded-lg object-cover" />
+                    <div>
+                      <p className="text-sm font-semibold text-green-700">Photo uploaded!</p>
+                      <p className="text-xs text-green-600">This will be your profile photo.</p>
                     </div>
-                  )}
-                </div>
-
-                {/* Or pick a sample */}
-                <div>
-                  <p className="text-sm font-medium text-gray-500 mb-3">Or choose a sample photo for now</p>
-                  <div className="grid grid-cols-3 gap-3">
-                    {photoOptions.map((url) => (
-                      <button
-                        key={url}
-                        type="button"
-                        onClick={() => set('selectedPhoto', url)}
-                        className={`relative aspect-[3/4] rounded-2xl overflow-hidden border-4 transition-all ${
-                          form.selectedPhoto === url ? 'border-orange-500 shadow-lg shadow-orange-200' : 'border-transparent'
-                        }`}
-                      >
-                        <img
-                          src={`${url}?auto=compress&cs=tinysrgb&w=300`}
-                          alt="Profile option"
-                          className="w-full h-full object-cover"
-                        />
-                        {form.selectedPhoto === url && (
-                          <div className="absolute top-2 right-2 w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
-                            <Check className="w-4 h-4 text-white" />
-                          </div>
-                        )}
-                      </button>
-                    ))}
+                    <div className="ml-auto w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                      <Check className="w-3.5 h-3.5 text-white" />
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {!form.selectedPhoto && (
+                  <p className="text-sm text-gray-400 text-center">Upload a photo to continue</p>
+                )}
               </div>
             )}
 

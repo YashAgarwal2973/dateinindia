@@ -1,77 +1,58 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Heart, Phone, ArrowRight, ChevronLeft, Clock } from 'lucide-react';
-import { sendOTP, verifyOTPAndAuth } from '@/lib/api';
+import { Heart, Mail, Clock, CheckCircle, Loader2 } from 'lucide-react';
+import { sendMagicLink, verifyMagicLink } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 
-type Step = 'phone' | 'otp';
+type Step = 'email' | 'sent' | 'verifying';
 
 export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { signIn } = useAuth();
-  const [step, setStep] = useState<Step>('phone');
-  const [phone, setPhone] = useState('');
-  const [otpId, setOtpId] = useState('');
-  const [code, setCode] = useState('');
+  const [step, setStep] = useState<Step>('email');
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const otpInputRef = useRef<HTMLInputElement>(null);
 
   const sessionExpired = searchParams.get('reason') === 'expired';
-
-  // Scroll OTP input into view when virtual keyboard opens on mobile
-  useEffect(() => {
-    if (step === 'otp' && otpInputRef.current) {
-      setTimeout(() => {
-        otpInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        otpInputRef.current?.focus();
-      }, 100);
-    }
-  }, [step]);
+  const token = searchParams.get('token');
 
   useEffect(() => { document.title = 'Sign In | DateInIndia'; }, []);
 
-  async function handleSendOTP(e: React.FormEvent) {
-    e.preventDefault();
-    setError('');
-    if (!phone || phone.length < 10) {
-      setError('Enter a valid 10-digit mobile number');
-      return;
-    }
-    setLoading(true);
-    try {
-      const id = await sendOTP(phone);
-      setOtpId(id);
-      setStep('otp');
-    } catch {
-      setError('Failed to send OTP. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  }
+  // Auto-verify when landing with a magic link token in the URL
+  useEffect(() => {
+    if (!token) return;
+    setStep('verifying');
+    const name = sessionStorage.getItem('signup_name') || undefined;
+    verifyMagicLink(token, name)
+      .then(({ accessToken, isNewUser }) => {
+        sessionStorage.removeItem('signup_name');
+        signIn(accessToken);
+        router.replace(isNewUser ? '/onboarding' : '/browse');
+      })
+      .catch(() => {
+        setError('This magic link is invalid or has expired. Please request a new one.');
+        setStep('email');
+      });
+  }, [token, signIn, router]);
 
-  async function handleVerifyOTP(e: React.FormEvent) {
+  async function handleSendLink(e: React.FormEvent) {
     e.preventDefault();
     setError('');
-    if (code.length !== 6) {
-      setError('Enter the 6-digit OTP');
+    if (!email.trim() || !email.includes('@')) {
+      setError('Enter a valid email address');
       return;
     }
     setLoading(true);
     try {
-      const { accessToken, isNewUser } = await verifyOTPAndAuth(otpId, code, phone);
-      signIn(accessToken);
-      if (isNewUser) {
-        router.push('/onboarding');
-      } else {
-        router.push('/browse');
-      }
+      await sendMagicLink(email.trim());
+      setStep('sent');
     } catch {
-      setError('Verification failed. Please try again.');
+      setError('Failed to send magic link. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -80,7 +61,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-green-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
             <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
@@ -97,33 +77,58 @@ export default function LoginPage() {
           )}
 
           <h1 className="text-2xl font-display font-bold text-gray-900">
-            {step === 'phone' ? 'Welcome back' : 'Enter your OTP'}          </h1>
+            {step === 'verifying' ? 'Signing you in…' :
+             step === 'sent' ? 'Check your email' :
+             'Welcome back'}
+          </h1>
           <p className="text-gray-500 mt-2">
-            {step === 'phone'
-              ? 'Sign in with your mobile number'
-              : `We sent a 6-digit code to +91 ${phone}`}
+            {step === 'email' ? 'Sign in with your email — no password needed' :
+             step === 'sent' ? `We sent a magic link to ${email}` :
+             'Verifying your magic link…'}
           </p>
-          {step === 'phone' && (
-            <p className="text-xs text-orange-500 mt-1 font-medium">[Dev mode: Use OTP 123456]</p>
-          )}
         </div>
 
         <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-8 border border-gray-100">
-          {step === 'phone' ? (
-            <form onSubmit={handleSendOTP} className="space-y-5">
+          {step === 'verifying' && (
+            <div className="flex flex-col items-center gap-4 py-4">
+              <Loader2 className="w-10 h-10 text-orange-500 animate-spin" />
+              <p className="text-gray-500 text-sm">Just a moment&hellip;</p>
+            </div>
+          )}
+
+          {step === 'sent' && (
+            <div className="flex flex-col items-center gap-4 py-2">
+              <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center">
+                <CheckCircle className="w-8 h-8 text-green-500" />
+              </div>
+              <p className="text-center text-sm text-gray-600 leading-relaxed">
+                Click the link in your email to sign in. It expires in 15 minutes.
+              </p>
+              <p className="text-center text-xs text-gray-400">
+                No email? Check your spam folder or{' '}
+                <button
+                  onClick={() => { setStep('email'); setError(''); }}
+                  className="text-orange-500 font-semibold hover:underline"
+                >
+                  try again
+                </button>.
+              </p>
+            </div>
+          )}
+
+          {step === 'email' && (
+            <form onSubmit={handleSendLink} className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
-                <div className="flex gap-3">
-                  <div className="flex items-center gap-2 px-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-600 font-medium text-sm whitespace-nowrap">
-                    &#127470;&#127475; +91
-                  </div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <input
-                    type="tel"
-                    value={phone}
-                    onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                    placeholder="9876543210"
-                    className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all text-lg tracking-wider"
-                    maxLength={10}
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all"
+                    autoFocus
                   />
                 </div>
               </div>
@@ -135,10 +140,10 @@ export default function LoginPage() {
                 disabled={loading}
                 className="w-full py-3.5 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
               >
-                {loading ? 'Sending OTP...' : (
+                {loading ? 'Sending link…' : (
                   <>
-                    <Phone className="w-5 h-5" />
-                    Send OTP
+                    <Mail className="w-5 h-5" />
+                    Send Magic Link
                   </>
                 )}
               </button>
@@ -149,48 +154,6 @@ export default function LoginPage() {
                   Create account
                 </Link>
               </p>
-            </form>
-          ) : (
-            <form onSubmit={handleVerifyOTP} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">OTP Code</label>
-                <input
-                  ref={otpInputRef}
-                  type="text"
-                  inputMode="numeric"
-                  value={code}
-                  onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  onFocus={() => setTimeout(() => otpInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300)}
-                  placeholder="123456"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 transition-all text-2xl tracking-[0.5em] text-center font-bold"
-                  maxLength={6}
-                />
-                <p className="text-xs text-gray-400 mt-2 text-center">OTP expires in 5 minutes</p>
-              </div>
-
-              {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3.5 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
-              >
-                {loading ? 'Verifying...' : (
-                  <>
-                    Verify & Sign In
-                    <ArrowRight className="w-5 h-5" />
-                  </>
-                )}
-              </button>
-
-              <button
-                type="button"
-                onClick={() => { setStep('phone'); setCode(''); setError(''); }}
-                className="w-full py-2 text-sm text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Change number
-              </button>
             </form>
           )}
         </div>

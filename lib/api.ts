@@ -13,23 +13,19 @@ function edgeFetch(path: string, body: Record<string, unknown>) {
   });
 }
 
-/** Send OTP to phone via edge function. Returns otpId. */
-export async function sendOTP(phone: string): Promise<string> {
-  const res = await edgeFetch('send-otp', { phone });
+/** Send a magic link to the given email. Pass name on signup. */
+export async function sendMagicLink(email: string, name?: string): Promise<void> {
+  const res = await edgeFetch('send-magic-link', { email, ...(name ? { name } : {}) });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to send OTP');
-  return data.otp_id as string;
+  if (!res.ok) throw new Error(data.error || 'Failed to send magic link');
 }
 
-/** Verify OTP and return a signed JWT + user info.
- *  Pass `name` only on signup (new account creation). */
-export async function verifyOTPAndAuth(
-  otpId: string,
-  code: string,
-  phone: string,
+/** Verify a magic link token and return a signed JWT + user info. */
+export async function verifyMagicLink(
+  token: string,
   name?: string
 ): Promise<{ accessToken: string; userId: string; isNewUser: boolean }> {
-  const res = await edgeFetch('verify-otp', { otp_id: otpId, code, phone, name });
+  const res = await edgeFetch('verify-magic-link', { token, ...(name ? { name } : {}) });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Verification failed');
   return {
