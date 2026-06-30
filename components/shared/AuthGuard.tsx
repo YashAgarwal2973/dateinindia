@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState, ReactNode } from 'react';
+import { useEffect, useState, useRef, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import AppNavbar from '@/components/shared/AppNavbar';
 import AppFooter from '@/components/shared/AppFooter';
-import { AlertTriangle, Camera, X, Clock } from 'lucide-react';
+import { Camera, X, Clock } from 'lucide-react';
 
 function getSessionExpiresAt(): Date | null {
   try {
@@ -89,14 +89,32 @@ function NoPhotosBanner() {
   );
 }
 
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    </div>
+  );
+}
+
 export default function AuthGuard({ children }: { children: ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, db, refreshUser } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
+  // FIX 3: isChecking prevents any redirect until DB verification completes.
+  const [isChecking, setIsChecking] = useState(false);
+  // FIX 2: track which user we've already DB-verified to avoid repeated queries.
+  const checkedForUserRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (loading) return;
+
     if (!user) {
+      checkedForUserRef.current = null;
       try {
         const wasExpired = sessionStorage.getItem('session_expired');
         if (wasExpired) {
@@ -110,22 +128,51 @@ export default function AuthGuard({ children }: { children: ReactNode }) {
       }
       return;
     }
-    // Redirect to onboarding if incomplete (but not if already on /onboarding)
-    if (!user.onboarding_complete && pathname !== '/onboarding') {
-      router.push('/onboarding');
-    }
-  }, [user, loading, router, pathname]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+    // Already on the onboarding page or context confirms completion — nothing to do.
+    if (pathname === '/onboarding' || user.onboarding_complete) return;
+
+    // Context says onboarding is incomplete. If we've already verified this user
+    // from the DB (and confirmed they're genuinely incomplete), redirect immediately.
+    if (checkedForUserRef.current === user.id) {
+      router.push('/onboarding');
+      return;
+    }
+
+    // FIX 2: verify directly from DB before redirecting — context may be stale
+    // (e.g. refreshUser() committed to DB but React state update raced with navigation).
+    checkedForUserRef.current = user.id;
+    let active = true;
+    setIsChecking(true);
+
+    (async () => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data } = await (db.from('users') as any)
+          .select('onboarding_complete')
+          .eq('id', user.id)
+          .single();
+
+        if (!active) return;
+
+        if (data?.onboarding_complete) {
+          // DB says complete but context was stale — re-sync context then allow through.
+          await refreshUser();
+        } else {
+          router.push('/onboarding');
+        }
+      } catch {
+        if (active) router.push('/onboarding');
+      } finally {
+        if (active) setIsChecking(false);
+      }
+    })();
+
+    return () => { active = false; };
+  }, [user, loading, router, pathname, db, refreshUser]);
+
+  // FIX 3: show spinner while initial load OR DB verification is in flight.
+  if (loading || isChecking) return <LoadingScreen />;
 
   if (!user) return null;
   if (!user.onboarding_complete && pathname !== '/onboarding') return null;

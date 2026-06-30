@@ -61,6 +61,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const completingOnboarding = useRef(false);
+  const stepInitialized = useRef(false);
   const [form, setForm] = useState<FormData>({
     name: user?.name || '',
     dateOfBirth: user?.date_of_birth || '',
@@ -86,6 +87,18 @@ export default function OnboardingPage() {
   useEffect(() => {
     if (!user) router.push('/login');
   }, [user, router]);
+
+  // FIX 4: resume from the step the user reached, not always step 1.
+  // onboarding_step in the DB = the step to show next (e.g. 3 means steps 1+2 done).
+  // Only initialize once; subsequent setStep calls (advancing steps) must not be
+  // overwritten by this effect re-running on user refreshes.
+  useEffect(() => {
+    if (stepInitialized.current || !user) return;
+    stepInitialized.current = true;
+    if (user.onboarding_step >= 2 && user.onboarding_step <= 6) {
+      setStep(user.onboarding_step);
+    }
+  }, [user]);
 
   // Navigate to /browse only after React has committed the updated user state
   // (onboarding_complete = true). Doing router.push inside saveStep races with
