@@ -16,6 +16,7 @@ const CITIES = ['All Cities', 'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chen
 const RELIGIONS = ['Any', 'Hindu', 'Muslim', 'Christian', 'Sikh', 'Buddhist', 'Jain'];
 
 interface Filters {
+  showMe: 'everyone' | 'women' | 'men';
   city: string;
   minAge: number;
   maxAge: number;
@@ -36,7 +37,7 @@ export default function BrowsePage() {
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState<Filters>({
-    city: '', minAge: 18, maxAge: 45, religion: '',
+    showMe: 'everyone', city: '', minAge: 18, maxAge: 65, religion: '',
     verifiedOnly: false, onlineOnly: false, sortBy: 'online_first',
   });
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -66,13 +67,15 @@ export default function BrowsePage() {
       .neq('id', user.id)
       .eq('onboarding_complete', true)
       .eq('is_suspended', false)
-      .eq('is_discoverable', true)
       .range((page - 1) * PER_PAGE, page * PER_PAGE - 1);
 
     const excludedIds = [...blockedIds, ...blockedByIds];
     if (excludedIds.length > 0) {
       query = query.not('id', 'in', `(${excludedIds.join(',')})`);
     }
+
+    if (filters.showMe === 'women') query = query.eq('gender', 'woman');
+    else if (filters.showMe === 'men') query = query.eq('gender', 'man');
 
     if (filters.city) query = query.eq('city', filters.city);
     if (filters.verifiedOnly) query = query.eq('aadhaar_verified', true);
@@ -152,6 +155,15 @@ export default function BrowsePage() {
   const FilterPanel = () => (
     <div className="space-y-6">
       <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Show me</label>
+        <select value={filters.showMe} onChange={e => setFilter('showMe', e.target.value as Filters['showMe'])}
+          className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:border-orange-400">
+          <option value="everyone">Everyone</option>
+          <option value="women">Women</option>
+          <option value="men">Men</option>
+        </select>
+      </div>
+      <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2">Sort By</label>
         <select value={filters.sortBy} onChange={e => setFilter('sortBy', e.target.value as Filters['sortBy'])}
           className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-white focus:outline-none focus:border-orange-400">
@@ -199,7 +211,7 @@ export default function BrowsePage() {
           <span className="text-sm font-medium text-gray-700">Online Now Only</span>
         </label>
       </div>
-      <button onClick={() => { setFilters({ city: '', minAge: 18, maxAge: 45, religion: '', verifiedOnly: false, onlineOnly: false, sortBy: 'online_first' }); setPage(1); }}
+      <button onClick={() => { setFilters({ showMe: 'everyone', city: '', minAge: 18, maxAge: 65, religion: '', verifiedOnly: false, onlineOnly: false, sortBy: 'online_first' }); setPage(1); }}
         className="w-full py-2 text-sm text-orange-500 font-medium hover:underline">Reset Filters</button>
     </div>
   );
@@ -260,7 +272,7 @@ export default function BrowsePage() {
                 <h3 className="text-lg font-semibold text-gray-700 mb-2">No one nearby yet</h3>
                 <p className="text-gray-400 text-sm mb-5">Try widening your filters to see more people.</p>
                 <button
-                  onClick={() => { setFilters({ city: '', minAge: 18, maxAge: 45, religion: '', verifiedOnly: false, onlineOnly: false, sortBy: 'online_first' }); setPage(1); }}
+                  onClick={() => { setFilters({ showMe: 'everyone', city: '', minAge: 18, maxAge: 65, religion: '', verifiedOnly: false, onlineOnly: false, sortBy: 'online_first' }); setPage(1); }}
                   className="px-5 py-2.5 bg-orange-500 text-white font-semibold rounded-xl text-sm hover:bg-orange-600 transition-colors"
                 >
                   Adjust Filters

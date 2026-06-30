@@ -163,6 +163,7 @@ export default function OnboardingPage() {
         updates.onboarding_complete = true;
         updates.onboarding_step = 6;
         updates.profile_complete_pct = 85;
+        updates.is_discoverable = true;
         if (form.selectedPhoto) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           await (db.from('photos') as any).upsert({
