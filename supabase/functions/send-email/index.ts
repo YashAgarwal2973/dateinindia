@@ -30,8 +30,8 @@ Deno.serve(async (req: Request) => {
       return respond({ error: "to, subject, and html are required" }, 400);
     }
 
-    const apiKey   = Deno.env.get("SENDGRID_API_KEY");
-    const fromEmail = Deno.env.get("SENDGRID_FROM_EMAIL") ?? "noreply@dateindia.com";
+    const apiKey   = Deno.env.get("SENDGRID_API_KEY")?.trim();
+    const fromEmail = (Deno.env.get("SENDGRID_FROM_EMAIL") || "noreply@dateindia.com").trim();
 
     if (!apiKey) {
       // DEV MODE: log to console, return success

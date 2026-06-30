@@ -115,6 +115,11 @@ Deno.serve(async (req: Request) => {
 
     const { data: existingAuth } = await adminClient.auth.admin.getUserById(userId);
 
+    // Track whether the user has previously set their own password via /set-password.
+    // Stored in user_metadata.has_password; preserved across magic-link sign-ins because
+    // updateUserById only resets the auth password field, not the metadata.
+    const hasPassword = existingAuth.user?.user_metadata?.has_password === true;
+
     if (!existingAuth.user) {
       const { error: authCreateErr } = await adminClient.auth.admin.createUser({
         id: userId,
@@ -158,6 +163,7 @@ Deno.serve(async (req: Request) => {
         access_token: session.access_token,
         user_id: userId,
         is_new_user: isNewUser,
+        has_password: hasPassword,
         expires_at: session.expires_at
           ? new Date(session.expires_at * 1000).toISOString()
           : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),

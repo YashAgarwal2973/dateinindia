@@ -45,7 +45,7 @@ export async function setPassword(jwt: string, password: string): Promise<void> 
       'Content-Type': 'application/json',
       'apikey': supabaseAnonKey,
     },
-    body: JSON.stringify({ password }),
+    body: JSON.stringify({ password, data: { has_password: true } }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.msg || data.message || 'Failed to set password');
@@ -55,7 +55,7 @@ export async function setPassword(jwt: string, password: string): Promise<void> 
 export async function verifyMagicLink(
   token: string,
   name?: string
-): Promise<{ accessToken: string; userId: string; isNewUser: boolean }> {
+): Promise<{ accessToken: string; userId: string; isNewUser: boolean; hasPassword: boolean }> {
   const res = await edgeFetch('verify-magic-link', { token, ...(name ? { name } : {}) });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Verification failed');
@@ -63,6 +63,7 @@ export async function verifyMagicLink(
     accessToken: data.access_token as string,
     userId: data.user_id as string,
     isNewUser: data.is_new_user as boolean,
+    hasPassword: data.has_password === true,
   };
 }
 

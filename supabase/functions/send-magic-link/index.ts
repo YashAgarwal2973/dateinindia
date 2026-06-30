@@ -31,8 +31,8 @@ Deno.serve(async (req: Request) => {
     }
 
     const adminClient = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      Deno.env.get("SUPABASE_URL")!.trim(),
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!.trim(),
       { auth: { autoRefreshToken: false, persistSession: false } },
     );
 
@@ -51,11 +51,11 @@ Deno.serve(async (req: Request) => {
       return respond({ error: "Failed to generate magic link" }, 500);
     }
 
-    const appBaseUrl = Deno.env.get("APP_BASE_URL") ?? "https://dateindia.app";
+    const appBaseUrl = (Deno.env.get("APP_BASE_URL") ?? "https://dateindia.app").trim();
     const magicLinkUrl = `${appBaseUrl}/verify?token=${token}`;
 
-    const apiKey = Deno.env.get("SENDGRID_API_KEY");
-    const fromEmail = Deno.env.get("SENDGRID_FROM_EMAIL") ?? "noreply@dateindia.app";
+    const apiKey = Deno.env.get("SENDGRID_API_KEY")?.trim();
+    const fromEmail = (Deno.env.get("SENDGRID_FROM_EMAIL") || "noreply@dateindia.app").trim();
 
     if (!apiKey) {
       console.log("[send-magic-link dev mode] Would send to:", email, "URL:", magicLinkUrl);
@@ -84,6 +84,9 @@ Deno.serve(async (req: Request) => {
 </body>
 </html>`;
 
+    console.log("[send-magic-link] FROM_EMAIL_DEBUG:", JSON.stringify(fromEmail));
+    console.log("[send-magic-link] API_KEY_SET:", !!apiKey, "KEY_LENGTH:", apiKey?.length);
+    console.log("[send-magic-link] Calling SendGrid API for:", email);
     const sgRes = await fetch("https://api.sendgrid.com/v3/mail/send", {
       method: "POST",
       headers: {
@@ -98,6 +101,7 @@ Deno.serve(async (req: Request) => {
         reply_to: { email: fromEmail },
       }),
     });
+    console.log("[send-magic-link] SendGrid response status:", sgRes.status, sgRes.statusText);
 
     if (!sgRes.ok) {
       const errBody = await sgRes.text();
@@ -106,8 +110,12 @@ Deno.serve(async (req: Request) => {
     }
 
     return respond({ success: true }, 200);
-  } catch (err) {
-    console.error("send-magic-link error:", err);
+  } catch (err: unknown) {
+    const error = err as Error;
+    console.error("[send-magic-link] Unhandled exception:");
+    console.error("  message:", error?.message);
+    console.error("  stack:", error?.stack);
+    console.error("  full error object:", err);
     return respond({ error: "Internal server error" }, 500);
   }
 });
