@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Heart, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
@@ -60,6 +60,7 @@ export default function OnboardingPage() {
   const { user, refreshUser, db } = useAuth();
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
+  const completingOnboarding = useRef(false);
   const [form, setForm] = useState<FormData>({
     name: user?.name || '',
     dateOfBirth: user?.date_of_birth || '',
@@ -84,6 +85,16 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     if (!user) router.push('/login');
+  }, [user, router]);
+
+  // Navigate to /browse only after React has committed the updated user state
+  // (onboarding_complete = true). Doing router.push inside saveStep races with
+  // AuthGuard, which reads stale context and redirects back to /onboarding.
+  useEffect(() => {
+    if (completingOnboarding.current && user?.onboarding_complete) {
+      completingOnboarding.current = false;
+      router.push('/browse');
+    }
   }, [user, router]);
 
   useEffect(() => { document.title = 'Get Started | DateInIndia'; }, []);
@@ -135,6 +146,7 @@ export default function OnboardingPage() {
         const completed = [form.name, form.dateOfBirth, form.gender, form.city, form.bio, form.interests.length > 0].filter(Boolean).length;
         updates.profile_complete_pct = Math.round((completed / 6) * 100);
       } else if (step === 6) {
+        completingOnboarding.current = true;
         updates.onboarding_complete = true;
         updates.onboarding_step = 6;
         updates.profile_complete_pct = 85;
@@ -153,11 +165,12 @@ export default function OnboardingPage() {
       await (db.from('users') as any).update(updates).eq('id', user.id);
       await refreshUser();
 
-      if (step === 6) {
-        router.push('/browse');
-      } else {
+      if (step < 6) {
         setStep(s => s + 1);
       }
+      // Step 6: navigation to /browse is handled by the useEffect above,
+      // which fires after React commits the refreshed user (onboarding_complete = true),
+      // ensuring AuthGuard never sees stale state.
     } finally {
       setSaving(false);
     }
