@@ -6,30 +6,13 @@ import { Heart, Search, MessageCircle, Users, ChevronDown, LogOut, Settings, Use
 import { useAuth } from '@/lib/auth-context';
 import { useState, useEffect, useRef } from 'react';
 
-const TRUST_BANNERS = [
-  '✅ 3,241 verified members online · 0 fake profiles this month',
-  '🏛️ Every Aadhaar-verified profile reviewed by humans · No bots',
-  '💬 Messaging is always free · No subscription needed',
-  '🔒 Chat locked for first 7 days · Your safety by design',
-  '📊 Monthly transparency report published · Nothing to hide',
-  '🛡️ All photos checked by AI before approval · Zero tolerance for fakes',
-];
-
 export default function AppNavbar() {
   const { user, signOut, db } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const [bannerIdx, setBannerIdx] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setBannerIdx(i => (i + 1) % TRUST_BANNERS.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -69,21 +52,7 @@ export default function AppNavbar() {
   ];
 
   return (
-    <>
-      {/* Trust Banner */}
-      <div className="bg-orange-500 h-10 flex items-center overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 w-full">
-          <p
-            key={bannerIdx}
-            className="text-white text-sm font-medium text-center transition-all animate-in fade-in slide-in-from-bottom-1 duration-500"
-          >
-            {TRUST_BANNERS[bannerIdx]}
-          </p>
-        </div>
-      </div>
-
-      {/* Navbar */}
-      <nav className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
+    <nav className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link href="/browse" className="flex items-center gap-2 flex-shrink-0">
@@ -184,6 +153,5 @@ export default function AppNavbar() {
           </div>
         </div>
       </nav>
-    </>
   );
 }

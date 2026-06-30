@@ -53,7 +53,16 @@ export default function PhotoUpload({ onUploadComplete, compact = false }: Photo
         .from('profile-photos')
         .upload(filename, file, { upsert: true, contentType: file.type });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Supabase storage upload error:', {
+          message: uploadError.message,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          statusCode: (uploadError as any).statusCode,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          error: (uploadError as any).error,
+        });
+        throw uploadError;
+      }
 
       setProgress(100);
       const { data: urlData } = db.storage.from('profile-photos').getPublicUrl(filename);
@@ -61,9 +70,11 @@ export default function PhotoUpload({ onUploadComplete, compact = false }: Photo
       setPreview(null);
       setProgress(0);
       if (inputRef.current) inputRef.current.value = '';
-    } catch (err) {
-      console.error('Upload failed:', err);
-      setError('Upload failed. Please try again.');
+    } catch (err: unknown) {
+      const e = err as { message?: string };
+      const msg = e?.message || 'Unknown error';
+      console.error('Photo upload failed:', msg, err);
+      setError(`Upload failed: ${msg}`);
       setPreview(null);
       setProgress(0);
     } finally {
