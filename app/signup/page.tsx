@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Heart, Mail, Lock, Eye, EyeOff, User, ArrowRight, Loader2 } from 'lucide-react';
-import { supabase, getAuthClient } from '@/lib/supabase';
+import { signUpWithPassword } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 
 export default function SignupPage() {
@@ -18,7 +18,6 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [needsConfirm, setNeedsConfirm] = useState(false);
 
   useEffect(() => { document.title = 'Create Account | DateInIndia'; }, []);
 
@@ -33,88 +32,14 @@ export default function SignupPage() {
 
     setLoading(true);
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: email.trim().toLowerCase(),
-        password,
-        options: { data: { name: name.trim() } },
-      });
-
-      if (signUpError) {
-        if (signUpError.message.toLowerCase().includes('already registered')) {
-          throw new Error('An account with this email already exists. Sign in instead.');
-        }
-        throw new Error(signUpError.message);
-      }
-
-      if (!data.user) throw new Error('Signup failed. Please try again.');
-
-      if (!data.session) {
-        // Email confirmation is enabled in Supabase — user must confirm first.
-        // Disable it in: Dashboard → Authentication → Providers → Email → "Confirm email" toggle OFF
-        setNeedsConfirm(true);
-        return;
-      }
-
-      // Create the public.users profile row using the new session JWT.
-      // Requires "users_insert_own" RLS policy (auth.uid() = id).
-      const authClient = getAuthClient(data.session.access_token);
-      const { error: profileError } = await authClient.from('users').insert({
-        id: data.user.id,
-        email: email.trim().toLowerCase(),
-        name: name.trim(),
-        // Unique placeholder — replaced with real phone during onboarding if collected
-        phone: `em_${data.user.id.replace(/-/g, '').slice(0, 12)}`,
-        date_of_birth: '1990-01-01',  // placeholder; updated in onboarding
-        gender: 'man',                // placeholder; updated in onboarding
-        looking_for: 'everyone',
-        relationship_goal: 'not_sure',
-        trust_score: 10,
-        onboarding_step: 1,
-        onboarding_complete: false,
-      });
-
-      if (profileError) {
-        console.error('Profile creation failed:', profileError);
-        throw new Error('Account created but profile setup failed. Please contact support.');
-      }
-
-      signIn(data.session.access_token);
+      const { accessToken } = await signUpWithPassword(email.trim(), password, name.trim());
+      signIn(accessToken);
       router.replace('/onboarding');
     } catch (err: unknown) {
       setError((err as Error).message || 'Signup failed. Please try again.');
     } finally {
       setLoading(false);
     }
-  }
-
-  if (needsConfirm) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-green-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-md text-center">
-          <Link href="/" className="inline-flex items-center gap-2 mb-10">
-            <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
-              <Heart className="w-5 h-5 text-white fill-white" />
-            </div>
-            <span className="font-display font-bold text-2xl text-gray-900">DateInIndia</span>
-          </Link>
-          <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 p-8 border border-gray-100 space-y-4">
-            <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto">
-              <Mail className="w-8 h-8 text-orange-500" />
-            </div>
-            <h1 className="text-xl font-display font-bold text-gray-900">Check your email</h1>
-            <p className="text-gray-500 text-sm leading-relaxed">
-              We sent a confirmation link to <strong>{email}</strong>. Click it to activate your account, then sign in.
-            </p>
-            <Link
-              href="/login"
-              className="inline-flex items-center justify-center w-full py-3.5 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 transition-colors"
-            >
-              Go to Sign In
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
   }
 
   return (

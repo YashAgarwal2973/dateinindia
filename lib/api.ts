@@ -20,6 +20,21 @@ export async function sendMagicLink(email: string, name?: string): Promise<void>
   if (!res.ok) throw new Error(data.error || 'Failed to send magic link');
 }
 
+/** Create a new account with email + password (calls the signup edge function). */
+export async function signUpWithPassword(
+  email: string,
+  password: string,
+  name: string,
+): Promise<{ accessToken: string; userId: string }> {
+  const res = await edgeFetch('signup', { email, password, name });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Signup failed');
+  return {
+    accessToken: data.access_token as string,
+    userId: data.user_id as string,
+  };
+}
+
 /** Sign in with email + password via Supabase auth. */
 export async function signInWithPassword(
   email: string,
