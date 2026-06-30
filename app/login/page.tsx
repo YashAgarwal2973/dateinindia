@@ -15,7 +15,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const { signIn } = useAuth();
 
-  const [mode, setMode] = useState<AuthMode>('magic');
+  const [mode, setMode] = useState<AuthMode>('password');
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -122,21 +122,21 @@ export default function LoginPage() {
             <div className="flex border-b border-gray-100">
               <button
                 type="button"
-                onClick={() => switchMode('magic')}
-                className={`flex-1 py-3 text-sm font-semibold transition-colors ${
-                  mode === 'magic' ? 'bg-orange-500 text-white' : 'text-gray-500 hover:bg-gray-50'
-                }`}
-              >
-                Magic Link
-              </button>
-              <button
-                type="button"
                 onClick={() => switchMode('password')}
                 className={`flex-1 py-3 text-sm font-semibold transition-colors ${
                   mode === 'password' ? 'bg-orange-500 text-white' : 'text-gray-500 hover:bg-gray-50'
                 }`}
               >
                 Email &amp; Password
+              </button>
+              <button
+                type="button"
+                onClick={() => switchMode('magic')}
+                className={`flex-1 py-3 text-sm font-semibold transition-colors ${
+                  mode === 'magic' ? 'bg-orange-500 text-white' : 'text-gray-500 hover:bg-gray-50'
+                }`}
+              >
+                Magic Link
               </button>
             </div>
           )}
