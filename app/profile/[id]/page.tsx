@@ -1,5 +1,7 @@
 'use client';
 
+export const runtime = 'edge';
+
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { MapPin, Briefcase, GraduationCap, Heart, MessageCircle, Flag, Ban, ArrowLeft, ChevronLeft, ChevronRight, Music } from 'lucide-react';
