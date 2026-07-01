@@ -63,7 +63,7 @@ function DeleteConfirmModal({
 }
 
 export default function PhotoManagementPage() {
-  const { user, db } = useAuth();
+  const { user, db, refreshUser } = useAuth();
   const router = useRouter();
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,6 +99,7 @@ export default function PhotoManagementPage() {
       is_primary: photos.length === 0,
     });
     await fetchPhotos();
+    await refreshUser();
   }
 
   async function handleSetPrimary(photoId: string) {
@@ -164,6 +165,7 @@ export default function PhotoManagementPage() {
       }
     }
     await fetchPhotos();
+    await refreshUser();
     setDeleting(false);
     setConfirmDelete(null);
   }

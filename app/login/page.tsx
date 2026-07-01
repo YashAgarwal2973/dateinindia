@@ -34,9 +34,9 @@ export default function LoginPage() {
     setStep('verifying');
     const name = sessionStorage.getItem('signup_name') || undefined;
     verifyMagicLink(token, name)
-      .then(({ accessToken, isNewUser }) => {
+      .then(({ accessToken, refreshToken, isNewUser }) => {
         sessionStorage.removeItem('signup_name');
-        signIn(accessToken);
+        signIn(accessToken, refreshToken);
         router.replace(isNewUser ? '/set-password?next=/onboarding' : '/browse');
       })
       .catch(() => {
@@ -73,8 +73,8 @@ export default function LoginPage() {
     if (!password) { setError('Enter your password'); return; }
     setLoading(true);
     try {
-      const { accessToken } = await signInWithPassword(email.trim(), password);
-      signIn(accessToken);
+      const { accessToken, refreshToken } = await signInWithPassword(email.trim(), password);
+      signIn(accessToken, refreshToken);
       router.replace('/browse');
     } catch {
       setError('Incorrect email or password.');

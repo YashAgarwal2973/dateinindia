@@ -90,6 +90,7 @@ Deno.serve(async (req: Request) => {
           trust_score: 10,
           onboarding_step: 1,
           onboarding_complete: false,
+          is_discoverable: true,
         })
         .select("id")
         .single();
@@ -161,6 +162,7 @@ Deno.serve(async (req: Request) => {
     return respond(
       {
         access_token: session.access_token,
+        refresh_token: session.refresh_token,
         user_id: userId,
         is_new_user: isNewUser,
         has_password: hasPassword,

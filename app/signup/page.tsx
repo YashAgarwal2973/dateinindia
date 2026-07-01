@@ -32,8 +32,8 @@ export default function SignupPage() {
 
     setLoading(true);
     try {
-      const { accessToken } = await signUpWithPassword(email.trim(), password, name.trim());
-      signIn(accessToken);
+      const { accessToken, refreshToken } = await signUpWithPassword(email.trim(), password, name.trim());
+      signIn(accessToken, refreshToken);
       router.replace('/onboarding');
     } catch (err: unknown) {
       setError((err as Error).message || 'Signup failed. Please try again.');

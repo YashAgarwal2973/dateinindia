@@ -25,12 +25,13 @@ export async function signUpWithPassword(
   email: string,
   password: string,
   name: string,
-): Promise<{ accessToken: string; userId: string }> {
+): Promise<{ accessToken: string; refreshToken: string; userId: string }> {
   const res = await edgeFetch('signup', { email, password, name });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Signup failed');
   return {
     accessToken: data.access_token as string,
+    refreshToken: data.refresh_token as string,
     userId: data.user_id as string,
   };
 }
@@ -39,12 +40,13 @@ export async function signUpWithPassword(
 export async function signInWithPassword(
   email: string,
   password: string
-): Promise<{ accessToken: string; userId: string }> {
+): Promise<{ accessToken: string; refreshToken: string; userId: string }> {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw new Error(error.message);
   if (!data.session) throw new Error('No session returned');
   return {
     accessToken: data.session.access_token,
+    refreshToken: data.session.refresh_token,
     userId: data.user.id,
   };
 }
@@ -70,12 +72,13 @@ export async function setPassword(jwt: string, password: string): Promise<void> 
 export async function verifyMagicLink(
   token: string,
   name?: string
-): Promise<{ accessToken: string; userId: string; isNewUser: boolean; hasPassword: boolean }> {
+): Promise<{ accessToken: string; refreshToken: string; userId: string; isNewUser: boolean; hasPassword: boolean }> {
   const res = await edgeFetch('verify-magic-link', { token, ...(name ? { name } : {}) });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error || 'Verification failed');
   return {
     accessToken: data.access_token as string,
+    refreshToken: data.refresh_token as string,
     userId: data.user_id as string,
     isNewUser: data.is_new_user as boolean,
     hasPassword: data.has_password === true,

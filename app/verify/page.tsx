@@ -23,9 +23,9 @@ function VerifyContent() {
     setStatus('loading');
     const name = sessionStorage.getItem('signup_name') || undefined;
     try {
-      const { accessToken, isNewUser, hasPassword } = await verifyMagicLink(token, name);
+      const { accessToken, refreshToken, isNewUser, hasPassword } = await verifyMagicLink(token, name);
       sessionStorage.removeItem('signup_name');
-      signIn(accessToken);
+      signIn(accessToken, refreshToken);
       if (isNewUser) {
         router.replace('/set-password?next=/onboarding');
       } else if (!hasPassword) {

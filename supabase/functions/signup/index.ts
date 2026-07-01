@@ -80,6 +80,7 @@ Deno.serve(async (req: Request) => {
       looking_for: "everyone",
       relationship_goal: "not_sure",
       trust_score: 10,
+      is_discoverable: true,
       // onboarding_step and onboarding_complete omitted — DB defaults (1, false) are correct
     });
 
@@ -109,6 +110,7 @@ Deno.serve(async (req: Request) => {
     const session = sessionData.session;
     return respond({
       access_token: session.access_token,
+      refresh_token: session.refresh_token,
       user_id: userId,
       expires_at: session.expires_at
         ? new Date(session.expires_at * 1000).toISOString()
