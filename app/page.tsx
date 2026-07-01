@@ -142,11 +142,6 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-4 py-1.5 mb-6">
-                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-sm font-medium text-green-700">3,241 verified members online now</span>
-              </div>
-
               <h1 className="text-5xl lg:text-6xl font-display font-bold text-gray-900 leading-tight mb-6">
                 Real people.<br />
                 <span className="text-orange-500">Free messaging.</span><br />

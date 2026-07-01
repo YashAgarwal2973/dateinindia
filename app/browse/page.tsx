@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Heart, MessageCircle, Search, SlidersHorizontal, MapPin, Star, X } from 'lucide-react';
+import { Heart, MessageCircle, Search, SlidersHorizontal, MapPin, X } from 'lucide-react';
 import AuthGuard from '@/components/shared/AuthGuard';
 import { useAuth } from '@/lib/auth-context';
 import { getAge, isOnline, getTrustScoreColor } from '@/lib/api';
@@ -67,6 +67,7 @@ export default function BrowsePage() {
       .neq('id', user.id)
       .eq('onboarding_complete', true)
       .eq('is_suspended', false)
+      .or('is_discoverable.eq.true,is_discoverable.is.null')
       .range((page - 1) * PER_PAGE, page * PER_PAGE - 1);
 
     const excludedIds = [...blockedIds, ...blockedByIds];
@@ -385,27 +386,6 @@ export default function BrowsePage() {
                   </a>
                 )}
               </div>
-            </div>
-            <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-5 mt-4 text-white">
-              <div className="flex items-center gap-2 mb-3">
-                <Star className="w-4 h-4 fill-white" />
-                <span className="text-sm font-semibold">This Month</span>
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-orange-100">Fake profiles removed</span>
-                  <span className="text-sm font-bold">23</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-orange-100">New verified members</span>
-                  <span className="text-sm font-bold">1,247</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xs text-orange-100">Scam attempts blocked</span>
-                  <span className="text-sm font-bold">12</span>
-                </div>
-              </div>
-              <a href="/trust" className="block mt-3 text-xs text-orange-200 hover:text-white underline">View full report →</a>
             </div>
           </aside>
         </div>
